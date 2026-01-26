@@ -5,11 +5,15 @@
 ;;; Copyright (C) 2026 Your Name
 
 (asdf:defsystem #:rss-parser
-  :description "A basic application."
+  :description "A rss fetcher written by common lisp"
   :author      "Your Name"
   :license     "MIT"
   :version     "0.1.0"
-  :depends-on  ()
+  :depends-on  ("lquery" "dexador" "alexandria" "fifo-queue")
   :serial t
   :components ((:file "src/package")
                (:file "src/main")))
+
+
+
+
