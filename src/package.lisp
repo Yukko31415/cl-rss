@@ -4,9 +4,12 @@
 ;;;
 ;;; Copyright (C) 2026 Your Name
 
+
+
 (defpackage #:rss-parser
   (:use #:cl)
   (:documentation "The rss-parser package.")
-  (:export #:main))
+  (:export #:make-rss-fecher))
 
 (in-package #:rss-parser)
+
