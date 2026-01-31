@@ -5,11 +5,12 @@
 ;;; Copyright (C) 2026 Your Name
 
 
-
 (defpackage #:rss-parser
   (:use #:cl)
-  (:documentation "The rss-parser package.")
-  (:export #:make-rss-fecher))
+  (:export #:print-rss-cache
+	   #:initialize-fetcher-cache
+	   #:print-rss-cache-queue)
+  (:documentation "The rss-parser package."))
 
 (in-package #:rss-parser)
 
