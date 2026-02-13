@@ -4,7 +4,7 @@
 ;;;
 ;;; Copyright (C) 2026 Your Name
 
-(in-package #:rss-parser)
+(in-package #:rss)
 
 
 

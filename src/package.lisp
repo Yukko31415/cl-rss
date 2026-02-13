@@ -5,7 +5,7 @@
 ;;; Copyright (C) 2026 Your Name
 
 
-(defpackage #:rss-parser
+(defpackage #:rss
   (:use #:cl)
   (:export #:initialize-fetcher-cache
 	   #:print-rss-cache-queue
@@ -13,7 +13,7 @@
 	   #:define-rss-fetcher
 	   #:fetcher-name
 	   #:fetch)
-  (:documentation "The rss-parser package."))
+  (:documentation "The rss package."))
 
-(in-package #:rss-parser)
+(in-package #:rss)
 
