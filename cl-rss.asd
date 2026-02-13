@@ -1,10 +1,10 @@
-;;; rss-parser.asd
+;;; cl-rss.asd
 ;;;
 ;;; SPDX-License-Identifier: MIT
 ;;;
 ;;; Copyright (C) 2026 Your Name
 
-(asdf:defsystem #:rss-parser
+(asdf:defsystem #:cl-rss
   :description "A rss fetcher written by common lisp"
   :author      "Your Name"
   :license     "MIT"
