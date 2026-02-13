@@ -14,7 +14,6 @@
 (defun string->symbol (string)
   (intern (string-upcase string)))
 
-
 (defun make-constructor-name (name)
   (string->symbol (format nil "make-~a" name)))
 
@@ -37,53 +36,42 @@
 
 
 (defclass rss-cache ()
-  ((name :initarg :name :reader rss-cache-name)
-   (url :initarg :url :reader rss-cache-url)
+  ((url :initarg :url :reader rss-cache-url)
    (tags :initarg :tags :reader rss-cache-tags)
    (table :initarg :table :reader rss-cache-table)
-   (queue-handler :initform (fifo-queue:make-fifo-queue-handler)
-	  :reader rss-cache-queue-handler)
+   (queue :initarg :queue
+	  :reader rss-cache-queue)
    (size :initarg :size :reader rss-cache-size)
    (key :initarg :key :reader rss-cache-key)
    (length :initform 0 :accessor rss-cache-length)))
 
 
 
-(declaim (ftype (function (symbol simple-string list &key (:key simple-string) (:size fixnum)))
-	  make-rss-cache))
-(defun make-rss-cache (name url tags &key key (size 100))
-  (make-instance 'rss-cache
-		 :name name
-		 :url url
-		 :tags tags
-		 :table (make-hash-table :size size :test #'equal)
-		 :key key
-		 :size size))
-
-
 
 (defun check-id (rss-cache id)
+  (declare (rss-cache rss-cache))
   (let ((table (rss-cache-table rss-cache))
-	(queue-handler (rss-cache-queue-handler rss-cache))
+	(queue (rss-cache-queue rss-cache))
 	(length (rss-cache-length rss-cache))
 	(size (rss-cache-size rss-cache))) 
     (if (nth-value 1 (gethash id table))
 	t
 	(progn (if (>= length size)
-		   (progn (remhash (funcall queue-handler :pop) table)
+		   (progn (remhash (fifo-queue:pop-queue queue) table)
 			  (setf (gethash id table) id)
-			  (funcall queue-handler :push id))
+			  (fifo-queue:push-queue queue id))
 		   (progn (setf (gethash id table) id)
-			  (funcall queue-handler :push id)
+			  (fifo-queue:push-queue queue id)
 			  (incf (rss-cache-length rss-cache))))
 	       nil))))
 
 
+
+
 (defclass rss-fetcher ()
-  ((cache :initarg :cache :reader rss-fetcher-cache)
-   (fetcher :initarg :fetcher :accessor rss-fetcher)))
-
-
+  ((name :initarg :name :reader fetcher-name)
+   (constructor :initarg :constructor :reader fetcher-constructor)
+   (cache :initarg :cache :reader fetcher-cache)))
 
 
 (defun make-constructor (name tags key)
@@ -94,16 +82,16 @@
 			 :append (list keyword symbol))))
     (if (member key tags :test 'string=)
 	`(defun ,(make-constructor-name name) (&key ,@symbolized-tags)
-	   (apply #'make-instance ',name '(,@arg-list)))
+	   (apply #'make-instance ',name (list ,@arg-list)))
 	`(defun ,(make-constructor-name name) (&key ,@symbolized-tags ,symbolized-key)
-	   (apply #'make-instance ',name '(,@arg-list))))))
+	   (declare (ignore ,symbolized-key))
+	   (apply #'make-instance ',name (list ,@arg-list))))))
 
 
 (defun make-slot (name tag)
   (let ((keyword (string->keyword tag))
-	(symbol (string->symbol tag))
-	(reader (string->symbol (format nil "~a-~a" name tag))))
-    `(,symbol :initarg ,keyword :reader ,reader)))
+	(symbol (string->symbol tag)))
+    `(,symbol :initarg ,keyword :reader ,symbol)))
 
 
 (defmacro define-item-object (name tags key)
@@ -113,63 +101,70 @@
 	    ,constructor)))
 
 
-
 (defun make-tags-list (tags key)
   (if (member key tags :test #'string=)
       tags
       (cons key tags)))
 
-(defmacro %make-rss-fecher (cache)
-  (alexandria:with-gensyms (items)
-    (let* ((name (rss-cache-name cache))
-	   (tags (rss-cache-tags cache))
-	   (key (rss-cache-key cache))
-	   (tags-list (make-tags-list tags key))
-	   (url (rss-cache-url cache))
-	   (constructor (make-constructor-name name))
-	   (interned-key (string->keyword key)))
-      `(lambda () (let ((,items (remove-if #'(lambda (_) (check-id ,cache _))
-				      (fetch-rss-elements ,url ',tags-list)
-				      :key #'(lambda (_) (getf _ ,interned-key)))))
-	       (mapcar #'(lambda (_) (apply #',constructor _)) ,items))))))
+
+
+
+
+
+(defgeneric make-rss-fetcher (name))
+
+
+(defmacro define-rss-fetcher (name url tags &key key (size 100))
+  "キャッシュオブジェクトとフェッチャーを生成する。
+フェッチャーは関数オブジェクトであり、funcallするとキャッシュに存在しない新規の記事オブジェクトを確認し、リストを返す。"
+  (dolist (str tags) (declare (simple-string str)))
+  (let ((constructor (make-constructor-name name)))
+    (alexandria:with-gensyms (symbol cache)
+      `(progn (define-item-object ,name ,tags ,key)
+	      (defmethod make-rss-fetcher ((,symbol (eql ',name)))
+		(declare (ignore ,symbol))
+		(let ((,cache (make-instance 'rss-cache
+					     :url ,url
+					     :tags ',tags
+					     :queue (fifo-queue:make-queue)
+					     :table (make-hash-table :size ,size :test #'equal)
+					     :key ,key
+					     :size ,size)))
+		  (make-instance 'rss-fetcher
+				 :name ',name
+				 :cache ,cache
+				 :constructor #',constructor)))))))
+
 
 
 
 
 (defun print-rss-cache-queue (fetcher &optional stream)
   "queueをstreamに出力する"
-  (let* ((cache (rss-fetcher-cache fetcher))
-	 (cache-queue (funcall (rss-cache-queue-handler cache) :view)))
-    (print cache-queue stream))
+  (let* ((cache (fetcher-cache fetcher))
+	 (cache-queue (rss-cache-queue cache)))
+    (fifo-queue:print-queue-list cache-queue stream))
   fetcher)
 
 
-(defmacro make-rss-fecher (name url tags &key key (size 100))
-  "キャッシュオブジェクトとフェッチャーを生成する。
-フェッチャーは関数オブジェクトであり、funcallするとキャッシュに存在しない新規の記事オブジェクトを確認し、リストを返す。"
-  (dolist (str tags) (declare (simple-string str)))
-  (let* ((cache (make-rss-cache name url tags :key key :size size))
-	 (name (rss-cache-name cache))
-	 (tags (rss-cache-tags cache))
-	 (key (rss-cache-key cache)))
-    `(progn (define-item-object ,name ,tags ,key)
-	    (make-instance 'rss-fetcher
-			   :cache ,cache
-			   :fetcher (%make-rss-fecher ,cache)))))
+(defun fetch (fetcher)
+ (let* ((constructor (fetcher-constructor fetcher))
+	(cache (fetcher-cache fetcher))
+	(tags (rss-cache-tags cache))
+	(key (rss-cache-key cache))
+	(tags-list (make-tags-list tags key))
+	(interned-key (string->keyword key))
+	(url (rss-cache-url cache))
+	(items (remove-if #'(lambda (_) (check-id cache _)) (fetch-rss-elements url tags-list)
+			  :key #'(lambda (_) (getf _ interned-key)))))
+   (mapcar #'(lambda (_) (apply constructor _)) items)))
 
 
 (defun initialize-fetcher-cache (fetcher queue)
   "出力されたqueueのリストを受け取り、cache内のqueueを初期化する"
-  (let* ((cache (rss-fetcher-cache fetcher))
-	 (table (rss-cache-table cache))
-	 (queue-handler (rss-cache-queue-handler cache))
+  (let* ((cache (fetcher-cache fetcher))
 	 (list (nreverse queue)))
     (dolist (key list)
-      (setf (gethash key table) key)
-      (funcall queue-handler :push key))
+      (check-id cache key))
     fetcher))
-
-
-
-
 
