@@ -7,9 +7,12 @@
 
 (defpackage #:rss-parser
   (:use #:cl)
-  (:export #:print-rss-cache
-	   #:initialize-fetcher-cache
-	   #:print-rss-cache-queue)
+  (:export #:initialize-fetcher-cache
+	   #:print-rss-cache-queue
+	   #:make-rss-fetcher
+	   #:define-rss-fetcher
+	   #:fetcher-name
+	   #:fetch)
   (:documentation "The rss-parser package."))
 
 (in-package #:rss-parser)
