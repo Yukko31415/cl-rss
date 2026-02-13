@@ -111,17 +111,17 @@
 
 
 
-(defgeneric make-rss-fetcher (name))
+(defgeneric make-fetcher (name))
 
 
-(defmacro define-rss-fetcher (name url tags &key key (size 100))
+(defmacro define-fetcher (name url tags &key key (size 100))
   "キャッシュオブジェクトとフェッチャーを生成する。
 フェッチャーは関数オブジェクトであり、funcallするとキャッシュに存在しない新規の記事オブジェクトを確認し、リストを返す。"
   (dolist (str tags) (declare (simple-string str)))
   (let ((constructor (make-constructor-name name)))
     (alexandria:with-gensyms (symbol cache)
       `(progn (define-item-object ,name ,tags ,key)
-	      (defmethod make-rss-fetcher ((,symbol (eql ',name)))
+	      (defmethod make-fetcher ((,symbol (eql ',name)))
 		(declare (ignore ,symbol))
 		(let ((,cache (make-instance 'rss-cache
 					     :url ,url
@@ -139,7 +139,7 @@
 
 
 
-(defun print-rss-cache-queue (fetcher &optional stream)
+(defun print-cache-queue (fetcher &optional stream)
   "queueをstreamに出力する"
   (let* ((cache (fetcher-cache fetcher))
 	 (cache-queue (rss-cache-queue cache)))
