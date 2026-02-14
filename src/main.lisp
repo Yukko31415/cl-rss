@@ -160,11 +160,21 @@
    (mapcar #'(lambda (_) (apply constructor _)) items)))
 
 
+(defun fetch/no-cache (fetcher)
+  (let* ((constructor (fetcher-constructor fetcher))
+	 (cache (fetcher-cache fetcher))
+	 (tags (rss-cache-tags cache))
+	 (key (rss-cache-key cache))
+	 (tags-list (make-tags-list tags key))
+	 (url (rss-cache-url cache))
+	 (items (fetch-rss-elements url tags-list)))
+    (mapcar #'(lambda (_) (apply constructor _)) items)))
+
+
 (defun initialize-fetcher-cache (fetcher queue)
   "出力されたqueueのリストを受け取り、cache内のqueueを初期化する"
   (let* ((cache (fetcher-cache fetcher))
 	 (list (nreverse queue)))
-    (dolist (key list)
-      (check-id cache key))
+    (dolist (key list) (check-id cache key))
     fetcher))
 

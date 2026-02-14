@@ -12,7 +12,8 @@
 	   #:make-fetcher
 	   #:define-fetcher
 	   #:fetcher-name
-	   #:fetch)
+	   #:fetch
+	   #:fetch/no-cache)
   (:documentation "The rss package."))
 
 (in-package #:rss)
