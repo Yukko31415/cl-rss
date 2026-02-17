@@ -148,16 +148,17 @@
 
 
 (defun fetch (fetcher)
- (let* ((constructor (fetcher-constructor fetcher))
-	(cache (fetcher-cache fetcher))
-	(tags (rss-cache-tags cache))
-	(key (rss-cache-key cache))
-	(tags-list (make-tags-list tags key))
-	(interned-key (string->keyword key))
-	(url (rss-cache-url cache))
-	(items (remove-if #'(lambda (_) (check-id cache _)) (fetch-rss-elements url tags-list)
-			  :key #'(lambda (_) (getf _ interned-key)))))
-   (mapcar #'(lambda (_) (apply constructor _)) items)))
+  "fetchを行う。itemのリストを返す。"
+  (let* ((constructor (fetcher-constructor fetcher))
+	 (cache (fetcher-cache fetcher))
+	 (tags (rss-cache-tags cache))
+	 (key (rss-cache-key cache))
+	 (tags-list (make-tags-list tags key))
+	 (interned-key (string->keyword key))
+	 (url (rss-cache-url cache))
+	 (items (remove-if #'(lambda (_) (check-id cache _)) (fetch-rss-elements url tags-list)
+			   :key #'(lambda (_) (getf _ interned-key)))))
+    (mapcar #'(lambda (_) (apply constructor _)) items)))
 
 
 (defun fetch/no-cache (fetcher)
