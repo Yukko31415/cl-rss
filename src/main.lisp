@@ -39,13 +39,10 @@
   ((url :initarg :url :reader rss-cache-url)
    (tags :initarg :tags :reader rss-cache-tags)
    (table :initarg :table :reader rss-cache-table)
-   (queue :initarg :queue
-	  :reader rss-cache-queue)
+   (queue :initarg :queue :reader rss-cache-queue)
    (size :initarg :size :reader rss-cache-size)
    (key :initarg :key :reader rss-cache-key)
    (length :initform 0 :accessor rss-cache-length)))
-
-
 
 
 (defun check-id (rss-cache id)
@@ -53,15 +50,15 @@
   (let ((table (rss-cache-table rss-cache))
 	(queue (rss-cache-queue rss-cache))
 	(length (rss-cache-length rss-cache))
-	(size (rss-cache-size rss-cache))) 
+	(size (rss-cache-size rss-cache)))
     (if (nth-value 1 (gethash id table))
 	t
 	(progn (if (>= length size)
 		   (progn (remhash (fifo-queue:pop-queue queue) table)
 			  (setf (gethash id table) id)
-			  (fifo-queue:push-queue queue id))
+			  (fifo-queue:push-queue id queue))
 		   (progn (setf (gethash id table) id)
-			  (fifo-queue:push-queue queue id)
+			  (fifo-queue:push-queue id queue)
 			  (incf (rss-cache-length rss-cache))))
 	       nil))))
 
