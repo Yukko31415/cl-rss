@@ -77,7 +77,7 @@
 	 (arg-list (loop :for symbol :in symbolized-tags
 			 :for keyword :in (mapcar #'string->keyword tags)
 			 :append (list keyword symbol))))
-    (if (member key tags :test 'string=)
+    (if (member key tags :test #'string=)
 	`(defun ,(make-constructor-name name) (&key ,@symbolized-tags)
 	   (apply #'make-instance ',name (list ,@arg-list)))
 	`(defun ,(make-constructor-name name) (&key ,@symbolized-tags ,symbolized-key)
