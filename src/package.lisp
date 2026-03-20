@@ -7,13 +7,14 @@
 
 (defpackage #:rss
   (:use #:cl)
-  (:export #:initialize-fetcher-cache
-	   #:print-cache-queue
-	   #:make-fetcher
-	   #:define-fetcher
-	   #:fetcher-name
+  (:export #:define-fetcher
 	   #:fetch
-	   #:fetch/no-cache)
+	   #:fetch-rss-elements
+	   #:fetch/no-cache
+	   #:fetcher-name
+	   #:initialize-fetcher-cache
+	   #:make-fetcher
+	   #:print-cache-queue)
   (:documentation "The rss package."))
 
 (in-package #:rss)
