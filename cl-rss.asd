@@ -8,7 +8,7 @@
   :description "A rss fetcher written by common lisp"
   :author      "Your Name"
   :license     "MIT"
-  :version     "2.1.0"
+  :version     "2.1.1"
   :depends-on  ("lquery" "dexador" "alexandria" "fifo-queue")
   :serial t
   :components ((:file "src/package")
