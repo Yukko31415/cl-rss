@@ -136,7 +136,10 @@
 		  (make-instance 'rss-fetcher
 				 :name ',name
 				 :cache ,cache
-				 :constructor #',constructor)))))))
+				 :constructor #',constructor)))
+	      ,name))))
+
+
 
 
 
