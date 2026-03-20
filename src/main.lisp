@@ -70,6 +70,9 @@
    (constructor :initarg :constructor :reader fetcher-constructor)
    (cache :initarg :cache :reader fetcher-cache)))
 
+(setf (documentation 'fetcher-name 'function)
+   "fetcher-name rss-fetcher => rss-fetcher-name")
+
 
 (defun make-constructor (name tags key)
   (let* ((symbolized-tags (mapcar #'string->symbol tags))
@@ -108,12 +111,15 @@
 
 
 
-(defgeneric make-fetcher (name))
+(defgeneric make-fetcher (name)
+  (:documentation "make-fetcher name => rss-fetcher"))
 
 
 (defmacro define-fetcher (name url tags &key key (size 100))
-  "キャッシュオブジェクトとフェッチャーを生成する。
-フェッチャーは関数オブジェクトであり、funcallするとキャッシュに存在しない新規の記事オブジェクトを確認し、リストを返す。"
+  "define-fetcher name url ({tag}*) &key key size => name
+   tag = a string.
+   key = a string.
+   キャッシュオブジェクトとフェッチャーを生成する。"
   (dolist (str tags) (declare (simple-string str)))
   (let ((constructor (make-constructor-name name)))
     (alexandria:with-gensyms (symbol cache)
@@ -145,7 +151,9 @@
 
 
 (defun fetch (fetcher)
-  "fetchを行う。itemのリストを返す。"
+  "fetch fetcher => ({items}*)
+   items = structure of imtem
+   fetchを行う。itemのリストを返す。"
   (let* ((constructor (fetcher-constructor fetcher))
 	 (cache (fetcher-cache fetcher))
 	 (tags (rss-cache-tags cache))
@@ -159,6 +167,7 @@
 
 
 (defun fetch/no-cache (fetcher)
+  "キャッシュを行わずにfetchを行う"
   (let* ((constructor (fetcher-constructor fetcher))
 	 (cache (fetcher-cache fetcher))
 	 (tags (rss-cache-tags cache))
