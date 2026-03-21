@@ -46,7 +46,6 @@
 
 
 (defun check-id (rss-cache id)
-  (declare (rss-cache rss-cache))
   (let ((table (rss-cache-table rss-cache))
 	(queue (rss-cache-queue rss-cache))
 	(length (rss-cache-length rss-cache))
