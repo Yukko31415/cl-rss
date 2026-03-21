@@ -182,8 +182,13 @@
 
 (defun initialize-fetcher-cache (fetcher queue)
   "出力されたqueueのリストを受け取り、cache内のqueueを初期化する"
-  (let* ((cache (fetcher-cache fetcher))
-	 (list (nreverse queue)))
-    (dolist (key list) (check-id cache key))
+  (let* ((cache (fetcher-cache fetcher)))
+    (dolist (key queue) (check-id cache key))
     fetcher))
+
+
+
+
+
+
 
