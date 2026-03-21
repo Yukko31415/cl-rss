@@ -9,7 +9,6 @@
   (:use #:cl)
   (:export #:define-fetcher
 	   #:fetch
-	   #:fetch-rss-elements
 	   #:fetch/no-cache
 	   #:fetcher-name
 	   #:initialize-fetcher-cache
