@@ -19,7 +19,7 @@
 
 
 (defun fetch-rss-elements (url tags)
-  "URLからRSSを取得し、TAGSで指定された要素をplistのリストとして返す"
+  ;; URLからRSSを取得し、TAGSで指定された要素をplistのリストとして返す
   (let* ((xml-string (dex:get url))
 	 ;; plumpでパースし、lqueryを初期化
 	 (doc (plump:parse xml-string))
