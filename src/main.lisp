@@ -88,14 +88,14 @@
 	   (apply #'make-instance ',name (list ,@arg-list))))))
 
 
-(defun make-slot (name tag)
+(defun make-slot (tag)
   (let ((keyword (string->keyword tag))
 	(symbol (string->symbol tag)))
     `(,symbol :initarg ,keyword :reader ,symbol)))
 
 
 (defmacro define-item-object (name tags key)
-  (let ((slots (mapcar #'(lambda (_) (make-slot name _)) tags))
+  (let ((slots (mapcar #'make-slot tags))
 	(constructor (make-constructor name tags key)))
     `(progn (defclass ,name () ,slots)
 	    ,constructor)))
